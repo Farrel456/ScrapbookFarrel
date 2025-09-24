@@ -1,43 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
- <meta charset="UTF-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loading Scrapbook</title>
+  <title>Scrapbook Calendar - Oktober 2025</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-<style>
-body {
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(135deg, #ffe6f7, #e6f0ff);
+    }
+
+    .top-left {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      font-weight: bold;
+      font-size: 20px;
+      color: #2c3e50;
+      font-family: 'Courier New', monospace;
+    }
+
+    #loadingScreen {
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       background: #fdf6f0;
       font-family: 'Comic Sans MS', cursive;
+      flex-direction: column;
     }
-   .loader {
-      text-align: center;
-    }
-   .loading-text {
+
+    .loader { text-align: center; }
+    .loading-text {
       margin-top: 15px;
       font-size: 20px;
       color: #444;
     }
-
-   .emoji {
+    .emoji {
       font-size: 60px;
-      animation: bounce 1s infinite;
+      animation: bounceEmoji 1s infinite;
     }
-   @keyframes bounce {
+    @keyframes bounceEmoji {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-15px); }
     }
-   .progress {
+    .progress {
       margin-top: 20px;
       height: 20px;
       border-radius: 10px;
     }
-   .my-name {
+    .my-name {
       margin-top: 25px;
       font-size: 26px;
       font-weight: bold;
@@ -45,47 +61,290 @@ body {
       font-family: 'Courier New', monospace;
     }
 
-</style>
+    #calendarPage { display: none; padding: 40px 20px; text-align: center; }
 
+    h1 {
+      font-weight: 700;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #ff6ec7, #6a5acd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      animation: bounceTitle 2s infinite;
+    }
+
+    @keyframes bounceTitle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .day-header {
+      font-weight: bold;
+      text-transform: uppercase;
+      background: #6a5acd;
+      color: white;
+      padding: 10px 0;
+      border-radius: 8px;
+    }
+
+    .day {
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px;
+      min-height: 90px;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, background 0.3s ease;
+      overflow: visible;
+      z-index: 1;
+    }
+    .day:hover { 
+      transform: scale(1.05); 
+      z-index: 5; 
+      background: #f3e9ff; /* Hover color */
+    }
+    .day-number { font-weight: bold; margin-bottom: 5px; }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin: 5px auto 0;
+      cursor: pointer;
+      position: relative;
+    }
+    .dot.holiday { background: #ff6ec7; }
+    .dot.school { background: #4da6ff; }
+    .dot.personal { background: #6fdc6f; }
+
+    .dot-content {
+      opacity: 0;
+      visibility: hidden;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      width: 280px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+      z-index: 999;
+    }
+    .day:hover .dot-content {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+    .carousel-inner img {
+      border-radius: 10px;
+      height: 160px;
+      object-fit: cover;
+    }
+    .carousel-caption {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+    }
+
+    .legend {
+      margin-top: 25px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 14px;
+      align-items: center;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+  </style>
 </head>
 <body>
-  <div class="loader">
-    <div class="emoji" id="emoji">🦋</div>
-    <div class="loading-text">Membuka scrapbook kenangan...</div>
-    <div class="progress w-75 mx-auto">
-      <div id="progressBar" 
-           class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
-           role="progressbar" style="width: 0%">0%</div>
+
+  <div id="loadingScreen">
+    <div class="loader">
+      <div class="emoji" id="emoji">🦋</div>
+      <div class="loading-text">Loading.......</div>
+      <div class="progress w-75 mx-auto">
+        <div id="progressBar"
+             class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+             role="progressbar" style="width: 0%">0%</div>
+      </div>
+      <div class="my-name">Farrel</div>
     </div>
-    <div class="my-name">Farrel</div>
   </div>
-  
+
+  <div id="calendarPage">
+    <div class="top-left">Farrel</div>
+    <h1><span>📅</span> Oktober 2025</h1>
+    <div class="calendar">
+      <div class="day-header">Min</div>
+      <div class="day-header">Sen</div>
+      <div class="day-header">Sel</div>
+      <div class="day-header">Rab</div>
+      <div class="day-header">Kam</div>
+      <div class="day-header">Jum</div>
+      <div class="day-header">Sab</div>
+      <div class="day"></div>
+      <div class="day"></div>
+      <div class="day"></div>
+      <div class="day"><div class="day-number">1</div></div>
+      <div class="day"><div class="day-number">2</div></div>
+      <div class="day"><div class="day-number">3</div></div>
+      <div class="day"><div class="day-number">4</div></div>
+      <div class="day">
+        <div class="day-number">5</div>
+        <div class="dot holiday"></div>
+        <div class="dot-content p-2">
+          <div id="carousel5" class="carousel slide" data-bs-ride="carousel" data-bs-interval="2500">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400" class="d-block w-100" alt="Beach">
+                <div class="carousel-caption"><i class="bi bi-sun"></i> Beach Day</div>
+              </div>
+              <div class="carousel-item">
+                <img src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=400" class="d-block w-100" alt="Hiking">
+                <div class="carousel-caption"><i class="bi bi-tree"></i> Hiking</div>
+              </div>
+              <div class="carousel-item">
+                <img src="https://plus.unsplash.com/premium_photo-1722944969391-1d21a2d404ea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw2Mnx8fGVufDB8fHx8fA%3D%3D" class="d-block w-100" alt="visit tokyo">
+                <div class="carousel-caption"><i class="bi bi-people"></i> visit tokyo</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="day"><div class="day-number">6</div></div>
+      <div class="day"><div class="day-number">7</div></div>
+      <div class="day"><div class="day-number">8</div></div>
+      <div class="day"><div class="day-number">9</div></div>
+      <div class="day"><div class="day-number">10</div></div>
+      <div class="day"><div class="day-number">11</div></div>
+      <div class="day"><div class="day-number">12</div></div>
+      <div class="day"><div class="day-number">13</div></div>
+      <div class="day"><div class="day-number">14</div></div>
+      <div class="day">
+        <div class="day-number">15</div>
+        <div class="dot school"></div>
+        <div class="dot-content p-2">
+          <div id="carousel15" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400" class="d-block w-100" alt="Camping">
+                <div clasw="carousel-caption"><i class="bi bi-tree"></i> Camping</div>
+              </div>
+              <div class="carousel-item">
+                <img src="https://plus.unsplash.com/premium_photo-1663932464937-e677ddfc1d55?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGNhZmV8ZW58MHx8MHx8fDA%3D" class="d-block w-100" alt="Cafe">
+                <div class="carousel-caption"><i class="bi bi-cup-hot"></i> Cafe</div>
+              </div>
+              <div class="carousel-item">
+                <img src="https://images.unsplash.com/photo-1580752300969-1ceaaa1f3039?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8bnljfGVufDB8fDB8fHww" class="d-block w-100" alt="City Walk">
+                <div class="carousel-caption"><i class="bi bi-building"></i> City Walk</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="day"><div class="day-number">16</div></div>
+      <div class="day"><div class="day-number">17</div></div>
+      <div class="day"><div class="day-number">18</div></div>
+      <div class="day"><div class="day-number">19</div></div>
+      <div class="day"><div class="day-number">20</div></div>
+      <div class="day"><div class="day-number">21</div></div>
+      <div class="day">
+        <div class="day-number">22</div>
+        <div class="dot personal"></div>
+        <div class="dot-content p-2">
+          <div id="carousel22" class="carousel slide" data-bs-ride="carousel" data-bs-interval="2500">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <img src="https://images.unsplash.com/photo-1700906010457-c7a565935b81?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Ym9va3N0b3JlfGVufDB8fDB8fHww" class="d-block w-100" alt="Bookstore">
+                <div class="carousel-caption"><i class="bi bi-book"></i> Bookstore</div>
+              </div>
+              <div class="carousel-item">
+                <img src="https://images.unsplash.com/photo-1673126167141-3c3e59e99f54?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bmF0dXJlJTIwc25vd3xlbnwwfHwwfHx8MA%3D%3D" class="d-block w-100" alt="Nature">
+                <div class="carousel-caption"><i class="bi bi-flower3"></i> Nature</div>
+              </div>
+              <div class="carousel-item">
+                <img src="https://plus.unsplash.com/premium_photo-1664471482655-126b77fb3395?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8ZGlubmVyfGVufDB8fDB8fHww" class="d-block w-100" alt="Dinner With Friends">
+                <div class="carousel-caption"><i class="bi bi-egg-fried"></i> Dinner With Friends</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="day"><div class="day-number">23</div></div>
+      <div class="day"><div class="day-number">24</div></div>
+      <div class="day"><div class="day-number">25</div></div>
+      <div class="day"><div class="day-number">26</div></div>
+      <div class="day"><div class="day-number">27</div></div>
+      <div class="day"><div class="day-number">28</div></div>
+      <div class="day"><div class="day-number">29</div></div>
+      <div class="day"><div class="day-number">30</div></div>
+      <div class="day"><div class="day-number">31</div></div>
+      <div class="day"></div>
+      <div class="day"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-color" style="background:#ff6ec7"></span> Holiday</div>
+      <div class="legend-item"><span class="legend-color" style="background:#4da6ff"></span> School Life</div>
+      <div class="legend-item"><span class="legend-color" style="background:#6fdc6f"></span> Personal Life</div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+      <button class="btn btn-outline-primary me-2">⬅ Previous</button>
+      <button class="btn btn-outline-primary">Next ➡</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-  let progress = 0;
+    let progress = 0;
     const progressBar = document.getElementById("progressBar");
-    const duration = 7500;  
+    const duration = 100;  
     const interval = 150;   
     const step = 100 / (duration / interval);
 
-const timer = setInterval(() => {
+    const timer = setInterval(() => {
       progress += step;
       if (progress >= 100) {
         progress = 100;
         clearInterval(timer);
-        window.location.href = "home.html"; }
+        document.getElementById("loadingScreen").style.display = "none";
+        document.getElementById("calendarPage").style.display = "block";
+      }
       progressBar.style.width = progress + "%";
       progressBar.innerText = Math.floor(progress) + "%";  
-  }, interval);
+    }, interval);
 
-const emojiElement = document.getElementById("emoji");
-const icons = ["🦋", "🌸", "🐢", "⭐"];
-let currentIndex = 0;
-
-emojiElement.addEventListener("animationiteration", () => {
-  currentIndex = (currentIndex + 1) % icons.length;
-  emojiElement.innerText = icons[currentIndex];
-});
+    const emojiElement = document.getElementById("emoji");
+    const icons = ["🦋", "🌸", "🐢", "⭐"];
+    let currentIndex = 0;
+    emojiElement.addEventListener("animationiteration", () => {
+      currentIndex = (currentIndex + 1) % icons.length;
+      emojiElement.innerText = icons[currentIndex];
+    });
   </script>
-
 </body>
 </html>
