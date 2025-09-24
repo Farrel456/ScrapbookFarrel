@@ -63,17 +63,20 @@
 
     #calendarPage { display: none; padding: 40px 20px; text-align: center; }
 
-    h1 {
-      font-weight: 700;
-      margin-bottom: 20px;
-      background: linear-gradient(90deg, #ff6ec7, #6a5acd);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      animation: bounceTitle 2s infinite;
-    }
+h1 {
+  font-weight: 700;
+  margin-bottom: 20px;
+  background: linear-gradient(90deg, #ff6ec7, #6a5acd);
+  background-clip: text;              /* standard */
+  -webkit-background-clip: text;      /* Safari/Chrome */
+  color: transparent;                 /* fallback */
+  -webkit-text-fill-color: transparent; 
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  animation: bounceTitle 2s infinite;
+}
+
 
     @keyframes bounceTitle {
       0%, 100% { transform: translateY(0); }
